@@ -1,9 +1,8 @@
+HISTFILE="$HOME/.zsh_history"
 HISTSIZE="10000"
 SAVEHIST="10000"
 
 setopt EXTENDED_HISTORY
-setopt HIST_EXPIRE_DUPS_FIRST
-setopt HIST_IGNORE_DUPS
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_FIND_NO_DUPS
 setopt HIST_SAVE_NO_DUPS
@@ -11,7 +10,6 @@ setopt HIST_IGNORE_SPACE
 setopt HIST_REDUCE_BLANKS
 setopt HIST_VERIFY
 setopt SHARE_HISTORY
-setopt INC_APPEND_HISTORY
 
 unsetopt BEEP
 
@@ -25,15 +23,28 @@ zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' check-for-changes true
 zstyle ':vcs_info:*' stagedstr ' %F{green}+%f'
 zstyle ':vcs_info:*' unstagedstr ' %F{yellow}-%f'
-zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
+zstyle ':vcs_info:git*+set-message:*' hooks git-untracked git-remote
 
 +vi-git-untracked() {
 	local in_tree
 	in_tree=$(git rev-parse --is-inside-work-tree 2>/dev/null)
 	if [[ $in_tree == 'true' ]] \
 	&& git status --porcelain | grep -m 1 '^??' &>/dev/null; then
-		hook_com[misc]=' %F{yellow}?%f'
+		hook_com[misc]+=' %F{yellow}?%f'
 	fi
+}
+
++vi-git-remote() {
+	local ahead behind
+	if ! git rev-parse --verify -q '@{upstream}' &>/dev/null; then
+		hook_com[misc]+=' %F{red}^%f'
+		return 0
+	fi
+	read -r ahead behind < \
+	<(git rev-list --left-right --count HEAD...'@{upstream}' 2>/dev/null)
+	(( ahead ))  && hook_com[misc]+=" %F{cyan}^${ahead}%f"
+	(( behind )) && hook_com[misc]+=" %F{magenta}v${behind}%f"
+	return 0
 }
 
 nix_indicator() {
@@ -41,8 +52,6 @@ nix_indicator() {
 }
 
 sys() {
-	local host=${HOST%%.*} user=${USER}
-	local dir="$HOME/.dotfiles/hosts/$host"
 	case "$1" in
 		clean)   sudo nix-collect-garbage -d && nix-collect-garbage -d ;;
 		init)
@@ -88,10 +97,11 @@ FLAKE
 	esac
 }
 
-precmd() {
+prompt_line() {
 	vcs_info
 	print -P '%F{8}%n@%m%f %~ ${vcs_info_msg_0_} $(nix_indicator)'
 }
+precmd_functions+=(prompt_line)
 
 PROMPT='%# '
 
