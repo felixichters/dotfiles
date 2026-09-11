@@ -1,0 +1,10 @@
+[user]
+	name = felix
+	email = ichters.fe@gmail.com
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = true
+
