@@ -1,6 +1,6 @@
 syntax on
 filetype plugin on
-colorscheme habamax
+colorscheme desert
 
 set number
 set cursorline
