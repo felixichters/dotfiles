@@ -38,7 +38,7 @@ precmd() {
 	while [[ -n $d && ! -e $d/.git ]]; do d=${d%/*}; done
 	[[ -n $d ]] && i=' %F{8}[git]%f'
 	[[ -n $IN_NIX_SHELL ]] && i+=' %F{8}[nix]%f'
-	print -P "%F{42}%~%f$i"
+	print -P "%F{green}%~%f$i"
 }
 
 PROMPT='%# '
