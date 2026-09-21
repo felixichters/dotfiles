@@ -1,6 +1,6 @@
 syntax on
 filetype plugin on
-colorscheme desert
+colorscheme slate
 
 set number
 set cursorline
