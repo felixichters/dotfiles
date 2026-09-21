@@ -36,9 +36,9 @@ FLAKE
 precmd() {
 	local d=$PWD i=''
 	while [[ -n $d && ! -e $d/.git ]]; do d=${d%/*}; done
-	[[ -n $d ]] && i=' %F{8}[git]%f'
-	[[ -n $IN_NIX_SHELL ]] && i+=' %F{8}[nix]%f'
-	print -P "%F{green}%~%f$i"
+	[[ -n $d ]] && i=' %F{yellow}[git]%f'
+	[[ -n $IN_NIX_SHELL ]] && i+=' %F{green}[nix]%f'
+	print -P "%F{cyan}%~%f$i"
 }
 
 PROMPT='%# '
