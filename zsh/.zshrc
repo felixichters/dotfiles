@@ -36,11 +36,26 @@ FLAKE
 precmd() {
 	local d=$PWD i=''
 	while [[ -n $d && ! -e $d/.git ]]; do d=${d%/*}; done
-	[[ -n $d ]] && i=' %F{yellow}[git]%f'
+	if [[ -n $d ]]; then
+		local -a lines
+		lines=("${(@f)$(git --no-optional-locks -C "$d" status --porcelain --branch 2>/dev/null)}")
+		local header=${lines[1]#\#\# }
+		local branch=${header%%...*}
+		[[ $branch == "HEAD (no branch)" ]] && branch=$(git -C "$d" rev-parse --short HEAD 2>/dev/null)
+		local dirty=''
+		(( ${#lines} > 1 )) && dirty='*'
+		local ahead='' behind=''
+		[[ $header == *'[ahead '* ]] && { ahead=${header#*'[ahead '}; ahead=${ahead%%[,\]]*}; }
+		[[ $header == *'behind '* ]] && { behind=${header#*'behind '}; behind=${behind%%]*}; }
+		local sync=''
+		[[ -n $ahead ]] && sync+=" +${ahead}"
+		[[ -n $behind ]] && sync+=" -${behind}"
+		local color='green'
+		[[ -n $dirty ]] && color='yellow'
+		i=" %F{$color}${branch}${dirty}${sync}%f"
+	fi
 	[[ -n $IN_NIX_SHELL ]] && i+=' %F{green}[nix]%f'
-	print -P "%F{cyan}%~%f$i"
+	PROMPT="%F{cyan}%(4~|.../%3~|%~)%f$i %# "
 }
-
-PROMPT='%# '
 
 path=("$HOME/.local/bin" $path)
